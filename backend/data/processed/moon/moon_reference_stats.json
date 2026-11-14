@@ -1,0 +1,74 @@
+{
+  "title": "TerraNova exploratory Moon analog screening",
+  "reference_region": "Lunar south-polar region represented by the supplied LOLA-derived 608 x 608 raster products",
+  "reference_sources": [
+    "LDRM_80S_1000MPP_ADJ_SLP_400M.tiff",
+    "LDRM_80S_1000MPP_ADJ_ROUGH_400M.tiff"
+  ],
+  "lunar_slope": {
+    "width": 608,
+    "height": 608,
+    "crs": "PROJCS[\"Moon (2015) - Sphere / Ocentric / South Polar\",GEOGCS[\"Moon (2015) - Sphere / Ocentric\",DATUM[\"Moon (2015) - Sphere\",SPHEROID[\"Moon (2015) - Sphere\",1737400,0,AUTHORITY[\"IAU\",\"30100\"]],AUTHORITY[\"IAU\",\"30100\"]],PRIMEM[\"Reference Meridian\",0,AUTHORITY[\"IAU\",\"30100\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"IAU\",\"30100\"]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_of_origin\",-90],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",NORTH],AXIS[\"Northing\",NORTH],AUTHORITY[\"IAU\",\"30135\"]]",
+    "pixel_size_m": 1000,
+    "valid_pixels": 369664,
+    "min": 0.32651379704475403,
+    "p05": 1.644958734512329,
+    "p25": 4.371150732040405,
+    "median": 7.686964988708496,
+    "mean": 8.989962235250488,
+    "p75": 12.362098455429077,
+    "p95": 21.01169834136962,
+    "max": 33.94801330566406
+  },
+  "lunar_roughness": {
+    "width": 608,
+    "height": 608,
+    "crs": "PROJCS[\"Moon (2015) - Sphere / Ocentric / South Polar\",GEOGCS[\"Moon (2015) - Sphere / Ocentric\",DATUM[\"Moon (2015) - Sphere\",SPHEROID[\"Moon (2015) - Sphere\",1737400,0,AUTHORITY[\"IAU\",\"30100\"]],AUTHORITY[\"IAU\",\"30100\"]],PRIMEM[\"Reference Meridian\",0,AUTHORITY[\"IAU\",\"30100\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"IAU\",\"30100\"]],PROJECTION[\"Polar_Stereographic\"],PARAMETER[\"latitude_of_origin\",-90],PARAMETER[\"central_meridian\",0],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",NORTH],AXIS[\"Northing\",NORTH],AUTHORITY[\"IAU\",\"30135\"]]",
+    "pixel_size_m": 1000,
+    "valid_pixels": 369664,
+    "min": 0.6049154996871948,
+    "p05": 1.159598207473755,
+    "p25": 1.502485752105713,
+    "median": 1.839766263961792,
+    "mean": 2.000286739682998,
+    "p75": 2.3134549260139465,
+    "p95": 3.376403665542602,
+    "max": 12.240530014038086
+  },
+  "earth_sample_count": 6000,
+  "earth_tiles": [
+    "NASADEM_HGT_n10w070.tif",
+    "NASADEM_HGT_n20e100.tif",
+    "NASADEM_HGT_n30e050.tif",
+    "NASADEM_HGT_n50e010.tif",
+    "NASADEM_HGT_s20e140.tif",
+    "NASADEM_HGT_s30w070.tif"
+  ],
+  "method": {
+    "type": "Exploratory heuristic; not a trained machine-learning model",
+    "features_scored": [
+      "slope_deg",
+      "earth_roughness_percentile_balance"
+    ],
+    "weights": {
+      "lunar_slope_fit": 0.8,
+      "earth_roughness_balance": 0.2
+    },
+    "slope_fit": "100 * exp(-0.5 * ((Earth slope - lunar slope median) / lunar slope standard deviation)^2)",
+    "roughness_balance": "100 * (1 - abs(Earth roughness percentile - 50) / 50)",
+    "combined_index": "0.8 * slope_fit_score + 0.2 * earth_roughness_balance_score",
+    "lunar_slope_median_deg": 7.686965,
+    "lunar_slope_std_deg": 5.974516,
+    "score_display": "similarity_index is 0-100; similarity_score is the same index divided by 100 and is not a probability"
+  },
+  "limitations": [
+    "The lunar roughness raster and Earth roughness column are both expressed in metres, but use different definitions and baselines. Lunar roughness is reported as reference context only; it is not numerically compared to Earth roughness.",
+    "The roughness component is only a within-Earth-sample percentile-balance heuristic, not a measured Moon-to-Earth roughness match.",
+    "Earth feature samples use an analysis scale of about 27.8 km, while the supplied lunar slope and roughness products have 1 km pixel spacing and a 400 m calculation baseline. Scale mismatch can materially change terrain metrics.",
+    "No lunar DEM was supplied. Lunar local relief and elevation were not extracted or scored.",
+    "The Earth search covers only 6,000 samples from six NASADEM tiles, not global Earth coverage.",
+    "Climate, temperature, illumination, permanently shadowed regions, water ice, radiation, geology, mineralogy, resources, and engineering constraints are not analysed.",
+    "The index is exploratory, is not a probability, is not a trained Moon ML model, and does not establish a safe or suitable lunar base site."
+  ],
+  "disclaimer": "Exploratory computational terrain-similarity candidates for a hackathon demonstration. Not confirmed geological analogs, not a lunar landing-site selection, and not a habitability assessment."
+}

@@ -1,0 +1,12 @@
+/* Additions for the React version */
+.hero__copy{transition:opacity .6s,visibility .6s}
+.hero__copy.is-hidden{opacity:0;visibility:hidden;pointer-events:none}
+.robot:not(.is-on) .speech{pointer-events:none}
+.speech.is-closed{display:none}
+.panel > *{transition:opacity .6s .35s,transform .6s .35s var(--ease)}
+.panel:not(.is-open) > *{opacity:0;transform:translateY(12px)}
+#root{position:relative}
+
+.model-summary{max-width:760px;margin:1.5rem auto 0;padding:1rem 1.2rem;border:1px solid rgba(155,180,220,.2);border-radius:12px;background:rgba(8,14,30,.55);color:rgba(225,233,249,.78);font-size:.82rem;line-height:1.55}
+.model-summary p{margin:.25rem 0}
+.model-summary b{color:#fff}

@@ -1,0 +1,54 @@
+TerraNova Final Project
+======================
+
+.
+|-- README.md
+|-- render.yaml
+|-- docs/
+|   |-- DATA_SOURCES.md
+|   |-- DEPLOYMENT_GUIDE.md
+|   |-- MOON_ANALOG_METHOD.md
+|   |-- NASA_SUBMISSION_DRAFT.md
+|   `-- TEST_REPORT.md
+|-- backend/
+|   |-- main.py
+|   |-- requirements.txt
+|   |-- requirements-moon-build.txt
+|   |-- .python-version
+|   |-- build_model.py
+|   |-- build_moon_candidates.py
+|   |-- data/
+|   |   |-- features/
+|   |   |   |-- earth_features.csv
+|   |   |   `-- mars_features.csv
+|   |   |-- raw/moon/
+|   |   |   |-- LDRM_80S_1000MPP_ADJ_SLP_400M.tiff
+|   |   |   `-- LDRM_80S_1000MPP_ADJ_ROUGH_400M.tiff
+|   |   `-- processed/moon/
+|   |       |-- moon_analog_candidates.json
+|   |       |-- moon_analog_candidates_all_6000.csv
+|   |       `-- moon_reference_stats.json
+|   |-- integration_layer/
+|   |   |-- chatbot.py
+|   |   |-- moon.py
+|   |   |-- scoring.py
+|   |   |-- integration.py
+|   |   `-- model_loader.py
+|   |-- model/
+|   |   |-- model_bundle.joblib
+|   |   `-- model_metadata.json
+|   `-- outputs/discovery_results/novel_candidates_ranked.csv
+`-- TerraNova/
+    |-- package.json
+    |-- package-lock.json
+    |-- vercel.json
+    |-- .env.example
+    |-- public/models/{Earth,Mars,Moon}/
+    `-- src/
+        |-- App.jsx
+        |-- apiData.js
+        |-- orbitApi.js
+        |-- engine.js
+        `-- components/MoonDiscoveries.jsx
+
+Generated folders (.venv, node_modules, dist, __pycache__) are intentionally excluded.
