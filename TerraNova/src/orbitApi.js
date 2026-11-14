@@ -1,5 +1,5 @@
 // ORBIT API client. Set VITE_API_URL to the backend origin in each environment.
-export const API_BASE_URL = "https://terranova-backend-jiz5bpieo-radwaashraf4s-projects.vercel.app";
+export const API_URL = "https://terranova-backend-jiz5bpieo-radwaashraf4s-projects.vercel.app";
 
 export class OrbitError extends Error {
   constructor(message, kind, status) {
