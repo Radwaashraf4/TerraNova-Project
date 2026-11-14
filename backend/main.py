@@ -3,7 +3,7 @@ from pathlib import Path
 
 try:
     from dotenv import load_dotenv
-except ImportError:  # requirements.txt installs python-dotenv; keep imports diagnosable otherwise
+except ImportError:
     load_dotenv = None
 
 if load_dotenv is not None:
@@ -17,9 +17,9 @@ from pydantic import BaseModel, Field
 from integration_layer import chatbot, scoring, moon
 
 
-# --------------------------------------------------
+# ==================================================
 # APP CONFIGURATION
-# --------------------------------------------------
+# ==================================================
 
 app = FastAPI(
     title="TerraNova API",
@@ -27,16 +27,30 @@ app = FastAPI(
     version="1.0.0"
 )
 
+
+# ==================================================
+# CORS CONFIGURATION
+# ==================================================
+
 def configured_cors_origins() -> list[str]:
-    """Read comma-separated production origins, retaining local Vite defaults."""
-    raw = os.environ.get("CORS_ORIGINS") or os.environ.get("CORS_ORIGIN")
-    if raw:
-        return [origin.strip().rstrip("/") for origin in raw.split(",") if origin.strip()]
-    return [
+
+    origins = [
+        "https://terranova-frontend-5lkcs6dc4-radwaashraf4s-projects.vercel.app",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:3000",
     ]
+
+    raw = os.environ.get("CORS_ORIGINS") or os.environ.get("CORS_ORIGIN")
+
+    if raw:
+        origins.extend(
+            origin.strip().rstrip("/")
+            for origin in raw.split(",")
+            if origin.strip()
+        )
+
+    return list(dict.fromkeys(origins))
 
 
 app.add_middleware(
@@ -47,15 +61,16 @@ app.add_middleware(
     allow_headers=["Content-Type", "Authorization"],
 )
 
+
 DISCLAIMER = (
     "Ranked computational terrain-similarity candidates. "
     "Not confirmed discoveries; independent geological review is pending."
 )
 
 
-# --------------------------------------------------
+# ==================================================
 # REQUEST MODELS
-# --------------------------------------------------
+# ==================================================
 
 class ChatRequest(BaseModel):
     message: str
@@ -72,11 +87,12 @@ class ScoreRequest(BaseModel):
     rows: list[dict]
 
 
-# --------------------------------------------------
+# ==================================================
 # HELPER FUNCTIONS
-# --------------------------------------------------
+# ==================================================
 
 def find(records, discovery_id):
+
     wanted = (
         chatbot.normalise_id(str(discovery_id))
         or str(discovery_id)
@@ -91,24 +107,26 @@ def find(records, discovery_id):
     )
 
 
-# --------------------------------------------------
+# ==================================================
 # ERROR HANDLING
-# --------------------------------------------------
+# ==================================================
 
 @app.exception_handler(FileNotFoundError)
 async def missing_file_handler(request, error):
+
     return JSONResponse(
         status_code=503,
         content={"detail": str(error)}
     )
 
 
-# --------------------------------------------------
+# ==================================================
 # HEALTH CHECK
-# --------------------------------------------------
+# ==================================================
 
 @app.get("/")
 def home():
+
     return {
         "status": "success",
         "message": "TerraNova API is running!"
@@ -117,20 +135,25 @@ def home():
 
 @app.get("/api/health")
 def health():
+
     return {
         "status": "ok",
         "ai_enabled": bool(os.environ.get("ANTHROPIC_API_KEY")),
         "model_saved": scoring.BUNDLE_PATH.is_file(),
-        "moon_data_available": moon.CANDIDATES_PATH.is_file() and moon.METADATA_PATH.is_file()
+        "moon_data_available": (
+            moon.CANDIDATES_PATH.is_file()
+            and moon.METADATA_PATH.is_file()
+        )
     }
 
 
-# --------------------------------------------------
+# ==================================================
 # MODEL INFORMATION
-# --------------------------------------------------
+# ==================================================
 
 @app.get("/api/model")
 def model_info():
+
     meta = chatbot.load_metadata()
 
     return {
@@ -144,12 +167,13 @@ def model_info():
     }
 
 
-# --------------------------------------------------
+# ==================================================
 # DISCOVERIES
-# --------------------------------------------------
+# ==================================================
 
 @app.get("/api/discoveries")
 def discoveries(limit: int | None = None):
+
     records = chatbot.load_records()
     meta = chatbot.load_metadata()
 
@@ -174,6 +198,7 @@ def discoveries(limit: int | None = None):
 
 @app.get("/api/discoveries/{discovery_id}")
 def one_discovery(discovery_id: str):
+
     records = chatbot.load_records()
     meta = chatbot.load_metadata()
 
@@ -193,12 +218,13 @@ def one_discovery(discovery_id: str):
     }
 
 
-# --------------------------------------------------
+# ==================================================
 # ORBIT CHATBOT
-# --------------------------------------------------
+# ==================================================
 
 @app.post("/api/chat")
 def chat(body: ChatRequest):
+
     message = body.message.strip()
 
     if not message:
@@ -207,11 +233,21 @@ def chat(body: ChatRequest):
             detail="message is required"
         )
 
-    # Route lunar questions/context to the grounded Moon screening data.
-    lunar_context = any(str(value).upper().startswith("MOON-EARTH-") for value in body.discovery_ids)
-    lunar_question = any(token in message.lower() for token in ("moon", "lunar", "moon-earth", "luna"))
+    lunar_context = any(
+        str(value).upper().startswith("MOON-EARTH-")
+        for value in body.discovery_ids
+    )
+
+    lunar_question = any(
+        token in message.lower()
+        for token in ("moon", "lunar", "moon-earth", "luna")
+    )
+
     if lunar_context or lunar_question:
-        return moon.answer(message, discovery_ids=body.discovery_ids)
+        return moon.answer(
+            message,
+            discovery_ids=body.discovery_ids
+        )
 
     return chatbot.answer(
         message,
@@ -220,12 +256,13 @@ def chat(body: ChatRequest):
     )
 
 
-# --------------------------------------------------
+# ==================================================
 # COMPARE TWO DISCOVERIES
-# --------------------------------------------------
+# ==================================================
 
 @app.post("/api/compare")
 def compare(body: CompareRequest):
+
     records = chatbot.load_records()
     meta = chatbot.load_metadata()
 
@@ -255,12 +292,13 @@ def compare(body: CompareRequest):
     }
 
 
-# --------------------------------------------------
+# ==================================================
 # TERRAIN SCORING
-# --------------------------------------------------
+# ==================================================
 
 @app.post("/api/score")
 def score(body: ScoreRequest):
+
     if not body.rows:
         raise HTTPException(
             status_code=400,
@@ -268,6 +306,7 @@ def score(body: ScoreRequest):
         )
 
     try:
+
         scores = scoring.score_rows(body.rows)
 
         return {
@@ -279,25 +318,34 @@ def score(body: ScoreRequest):
         }
 
     except (ValueError, KeyError, TypeError) as error:
+
         raise HTTPException(
             status_code=400,
             detail=str(error)
         )
+
     except (ImportError, OSError) as error:
+
         raise HTTPException(
             status_code=503,
-            detail=("Numerical scoring dependencies could not be loaded. Check NumPy/SciPy "
-                    "installation and Windows Application Control policy. The precomputed "
-                    "Mars and Moon discovery endpoints remain available."),
+            detail=(
+                "Numerical scoring dependencies could not be loaded. "
+                "Check NumPy/SciPy installation. "
+                "The precomputed Mars and Moon discovery endpoints "
+                "remain available."
+            )
         ) from error
 
-# --------------------------------------------------
-# MOON ANALOG SCREENING (EXPLORATORY)
-# --------------------------------------------------
+
+# ==================================================
+# MOON ANALOG SCREENING
+# ==================================================
 
 @app.get("/api/moon/model")
 def moon_model_info():
+
     meta = moon.load_metadata()
+
     return {
         "method": meta["method"],
         "reference_region": meta["reference_region"],
@@ -311,40 +359,84 @@ def moon_model_info():
 
 @app.get("/api/moon/discoveries")
 def moon_discoveries(limit: int = 20):
+
     records = moon.load_candidates()
     meta = moon.load_metadata()
+
     limit = min(max(limit, 0), 100)
+
     return {
         "count": min(len(records), limit),
         "total_evaluated": len(records),
         "disclaimer": meta["disclaimer"],
         "method": meta["method"],
         "limitations": meta["limitations"],
-        "discoveries": [{**row, "total_evaluated": len(records)} for row in records[:limit]],
+        "discoveries": [
+            {**row, "total_evaluated": len(records)}
+            for row in records[:limit]
+        ],
     }
 
 
 @app.get("/api/moon/discoveries/{discovery_id}")
 def one_moon_discovery(discovery_id: str):
+
     records = moon.load_candidates()
     wanted = discovery_id.upper().replace("_", "-")
+
     for record in records:
+
         if record["discovery_id"] == wanted:
-            return {**record, "total_evaluated": len(records), "disclaimer": record["disclaimer"]}
-    raise HTTPException(status_code=404, detail=f"{discovery_id} not found")
+            return {
+                **record,
+                "total_evaluated": len(records),
+                "disclaimer": record["disclaimer"]
+            }
+
+    raise HTTPException(
+        status_code=404,
+        detail=f"{discovery_id} not found"
+    )
 
 
 @app.post("/api/moon/compare")
 def compare_moon(body: CompareRequest):
+
     records = moon.load_candidates()
-    wanted = {body.id_a.upper().replace("_", "-"), body.id_b.upper().replace("_", "-")}
-    chosen = [row for row in records if row["discovery_id"] in wanted]
+
+    wanted = {
+        body.id_a.upper().replace("_", "-"),
+        body.id_b.upper().replace("_", "-")
+    }
+
+    chosen = [
+        row for row in records
+        if row["discovery_id"] in wanted
+    ]
+
     if len(chosen) != 2:
-        raise HTTPException(status_code=404, detail="Both IDs must be valid MOON-EARTH candidates")
-    by_id = {row["discovery_id"]: row for row in chosen}
-    a, b = by_id[body.id_a.upper().replace("_", "-")], by_id[body.id_b.upper().replace("_", "-")]
+        raise HTTPException(
+            status_code=404,
+            detail="Both IDs must be valid MOON-EARTH candidates"
+        )
+
+    by_id = {
+        row["discovery_id"]: row
+        for row in chosen
+    }
+
+    a = by_id[body.id_a.upper().replace("_", "-")]
+    b = by_id[body.id_b.upper().replace("_", "-")]
+
     return {
-        "candidate_a": a, "candidate_b": b,
-        "similarity_index_difference": round(a["similarity_index"] - b["similarity_index"], 3),
-        "note": "Exploratory heuristic comparison only; not a validated lunar analog assessment."
+        "candidate_a": a,
+        "candidate_b": b,
+        "similarity_index_difference": round(
+            a["similarity_index"] - b["similarity_index"],
+            3
+        ),
+        "note": (
+            "Exploratory heuristic comparison only; "
+            "not a validated lunar analog assessment."
+        )
     }
