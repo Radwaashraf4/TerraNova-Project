@@ -1,3 +1,4 @@
+
 import os
 from pathlib import Path
 
@@ -35,7 +36,13 @@ app = FastAPI(
 def configured_cors_origins() -> list[str]:
 
     origins = [
+        # Current TerraNova frontend production URL
+        "https://terranova-frontend-dusky.vercel.app",
+
+        # Previous frontend deployment URL
         "https://terranova-frontend-5lkcs6dc4-radwaashraf4s-projects.vercel.app",
+
+        # Local development
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:3000",
@@ -57,8 +64,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=configured_cors_origins(),
     allow_credentials=False,
-    allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
