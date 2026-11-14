@@ -34,15 +34,8 @@ app = FastAPI(
 # ==================================================
 
 def configured_cors_origins() -> list[str]:
-
     origins = [
-        # Current TerraNova frontend production URL
         "https://terranova-frontend-dusky.vercel.app",
-
-        # Previous frontend deployment URL
-        "https://terranova-frontend-5lkcs6dc4-radwaashraf4s-projects.vercel.app",
-
-        # Local development
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:3000",
@@ -99,7 +92,6 @@ class ScoreRequest(BaseModel):
 # ==================================================
 
 def find(records, discovery_id):
-
     wanted = (
         chatbot.normalise_id(str(discovery_id))
         or str(discovery_id)
@@ -120,7 +112,6 @@ def find(records, discovery_id):
 
 @app.exception_handler(FileNotFoundError)
 async def missing_file_handler(request, error):
-
     return JSONResponse(
         status_code=503,
         content={"detail": str(error)}
@@ -133,7 +124,6 @@ async def missing_file_handler(request, error):
 
 @app.get("/")
 def home():
-
     return {
         "status": "success",
         "message": "TerraNova API is running!"
@@ -142,7 +132,6 @@ def home():
 
 @app.get("/api/health")
 def health():
-
     return {
         "status": "ok",
         "ai_enabled": bool(os.environ.get("ANTHROPIC_API_KEY")),
@@ -160,7 +149,6 @@ def health():
 
 @app.get("/api/model")
 def model_info():
-
     meta = chatbot.load_metadata()
 
     return {
@@ -180,7 +168,6 @@ def model_info():
 
 @app.get("/api/discoveries")
 def discoveries(limit: int | None = None):
-
     records = chatbot.load_records()
     meta = chatbot.load_metadata()
 
@@ -205,7 +192,6 @@ def discoveries(limit: int | None = None):
 
 @app.get("/api/discoveries/{discovery_id}")
 def one_discovery(discovery_id: str):
-
     records = chatbot.load_records()
     meta = chatbot.load_metadata()
 
@@ -231,7 +217,6 @@ def one_discovery(discovery_id: str):
 
 @app.post("/api/chat")
 def chat(body: ChatRequest):
-
     message = body.message.strip()
 
     if not message:
@@ -269,7 +254,6 @@ def chat(body: ChatRequest):
 
 @app.post("/api/compare")
 def compare(body: CompareRequest):
-
     records = chatbot.load_records()
     meta = chatbot.load_metadata()
 
@@ -305,7 +289,6 @@ def compare(body: CompareRequest):
 
 @app.post("/api/score")
 def score(body: ScoreRequest):
-
     if not body.rows:
         raise HTTPException(
             status_code=400,
@@ -313,7 +296,6 @@ def score(body: ScoreRequest):
         )
 
     try:
-
         scores = scoring.score_rows(body.rows)
 
         return {
@@ -325,14 +307,12 @@ def score(body: ScoreRequest):
         }
 
     except (ValueError, KeyError, TypeError) as error:
-
         raise HTTPException(
             status_code=400,
             detail=str(error)
         )
 
     except (ImportError, OSError) as error:
-
         raise HTTPException(
             status_code=503,
             detail=(
@@ -350,7 +330,6 @@ def score(body: ScoreRequest):
 
 @app.get("/api/moon/model")
 def moon_model_info():
-
     meta = moon.load_metadata()
 
     return {
@@ -366,7 +345,6 @@ def moon_model_info():
 
 @app.get("/api/moon/discoveries")
 def moon_discoveries(limit: int = 20):
-
     records = moon.load_candidates()
     meta = moon.load_metadata()
 
@@ -387,12 +365,10 @@ def moon_discoveries(limit: int = 20):
 
 @app.get("/api/moon/discoveries/{discovery_id}")
 def one_moon_discovery(discovery_id: str):
-
     records = moon.load_candidates()
     wanted = discovery_id.upper().replace("_", "-")
 
     for record in records:
-
         if record["discovery_id"] == wanted:
             return {
                 **record,
@@ -408,7 +384,6 @@ def one_moon_discovery(discovery_id: str):
 
 @app.post("/api/moon/compare")
 def compare_moon(body: CompareRequest):
-
     records = moon.load_candidates()
 
     wanted = {
